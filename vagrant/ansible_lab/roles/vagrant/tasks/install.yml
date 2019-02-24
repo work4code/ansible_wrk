@@ -1,0 +1,7 @@
+---
+- name: install vim 
+  yum: name=vim-enhanced state=latest
+
+- name: install tree
+  yum: name=tree state=latest
+
