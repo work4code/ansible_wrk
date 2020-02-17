@@ -1,0 +1,44 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+ENV['VAGRANT_NO_PARALLEL'] = 'yes'
+
+Vagrant.configure(2) do |config|
+
+# Ansible Master Server
+  config.vm.define "ansible" do |master|
+    master.vm.box = "centos/8"
+    master.vm.hostname = "master.example.com"
+    master.vm.network "private_network", ip: "192.168.56.4"
+    master.vm.provision :shell, path: "master.sh"
+ 
+    master.vm.provider "virtualbox" do |v|
+      v.name = "ansible"
+      v.memory = 1048
+      v.cpus = 2
+      v.gui = "true"
+      # Prevent VirtualBox from interfering with host audio stack
+      v.customize ["modifyvm", :id, "--audio", "none"]
+    end
+end 
+
+NodeCount = 4
+# Ansible Nodes
+  (1..NodeCount).each do |i|
+    config.vm.define "server#{i}" do |server|
+      server.vm.network "private_network", ip: "192.168.56.10#{i}"
+      server.vm.box = "centos/8"
+      server.vm.hostname = "server#{i}.example.com"
+      server.vm.network "private_network", ip: "192.168.56.10#{i}"
+      server.vm.provision :shell, path: "server.sh"
+
+      server.vm.provider "virtualbox" do |v|
+        v.name = "servers#{i}"
+        v.memory = 1024
+        v.cpus = 1
+        # Prevent VirtualBox from interfering with host audio stack
+        v.customize ["modifyvm", :id, "--audio", "none"]
+  end
+end
+end
+end
